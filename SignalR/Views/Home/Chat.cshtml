@@ -1,0 +1,66 @@
+﻿@model IEnumerable<AppUser>
+@{
+    ViewData["Title"] = "Chat";
+}
+
+<div class="container">
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-2">User</div>
+        <div class="col-4"><input type="text" id="userInput" /></div>
+    </div>
+    <div class="row">
+        <div class="col-2">Message</div>
+        <div class="col-4"><input type="text" id="messageInput" /></div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-6">
+            <input type="button" id="sendButton" value="Send Message" />
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-6">
+        <hr />
+    </div>
+    <div class="col-6">
+        <div class="row">
+            <ul class="list-group">
+                @foreach (var item in Model)
+                {
+                    <li id="@item.Id" class="list-group-item"> <span class="@(item.ConnectionId==null?"bg-offline":"bg-online")" style="border-radius: 50%; display: inline-block; width: 15px; height: 15px "> </span>@item.Fullname</li>
+                }
+            </ul>
+
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-6">
+        <ul id="messagesList"></ul>
+    </div>
+</div>
+
+@section Scripts{
+    <script src="~/lib/microsoft/signalr/dist/browser/signalr.min.js"></script>
+<script>
+    var connection = new signalR.HubConnectionBuilder().withUrl("/chatHub").build();
+    connection.start();
+    document.getElementById("sendButton").addEventListener("click", function () {
+        let user = $("#userInput").val();
+        let message = $("#messageInput").val();
+        connection.invoke("SendMessage", user, message);
+    })
+    connection.on("connect", function (id) {
+       $(`#${id}`).find("span").addClass("bg-online");
+
+    })
+    connection.on("disconnect", function (id) {
+        
+       $(`#${id}`).find("span").removeClass("bg-online");
+    })
+
+</script>
+}
+
